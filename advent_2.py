@@ -36,12 +36,10 @@ def main():
             reds = regex.findall("(\d+) red", line)                 
             greens = regex.findall("(\d+) green", line)
             blues = regex.findall("(\d+) blue", line)
-            print("Game ID:", gameid)
-            print("Reds:", reds)
-            print("Greens:", greens)
-            print("Blues:", blues)
+            # STEP1
             if check_valid(reds, MAXRED) and check_valid(greens, MAXGREEN) and check_valid(blues, MAXBLUE):
                 sum_step1 += int(gameid)
+            # STEP2
             min_red = get_max(reds)
             min_green = get_max(greens)
             min_blue = get_max(blues)
