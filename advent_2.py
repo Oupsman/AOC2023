@@ -6,7 +6,7 @@ MAXRED=12
 MAXGREEN=13
 MAXBLUE=14
 
-# check if the number of reds, greens, and blues is valid
+# check if the number of reds, greens, or blues is valid
 def check_valid(cubes, max):
     for cube in cubes:
         if int(cube) > max:
