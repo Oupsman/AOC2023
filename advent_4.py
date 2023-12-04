@@ -1,6 +1,6 @@
-import regex
 import math
 INPUT = 'input_4.txt'
+
 
 def part1():
     sum_part1 = 0
@@ -22,6 +22,7 @@ def part1():
                 cards.append(counter+1)
             else:
                 cards.append(0)
+
         num_cards = [1 for _ in cards]
         for i, matches in enumerate(cards):
             for _ in range(num_cards[i]):
