@@ -10,8 +10,9 @@ import (
 )
 
 func solve(t int, d int) int {
-	delta := math.Pow(math.Pow(float64(t),2) - 4*float64(d),0.5)
-	lo, hi := (float64(t) - delta) / 2, (float64(t) + delta) / 2
+	delta := math.Sqrt(math.Pow(float64(t),2) - 4*float64(d))
+	lo := (float64(t) - delta) / 2
+	hi := (float64(t) + delta) / 2
 	return int(math.Ceil(hi) - math.Floor(lo) - 1)
 }
 
