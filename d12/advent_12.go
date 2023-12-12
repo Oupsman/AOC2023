@@ -25,7 +25,6 @@ func readFile(fname string) []string {
 }
 
 func recursiveArrangements(springs string, groups []int) int {
-	// fmt.Println(springs, groups)
 	key := springs
 	for _, group := range groups {
 		key += strconv.Itoa(group)+"," 
@@ -60,7 +59,6 @@ func recursiveArrangements(springs string, groups []int) int {
 			return 0
 		}
 		if strings.Contains(springs[0:groups[0]], ".") {
-		
 			cache[key] = 0
 			return 0
 		}
@@ -78,7 +76,7 @@ func recursiveArrangements(springs string, groups []int) int {
 			return res
 		}
 	}
-	fmt.Println("no other branches possible")
+
 	return 0
 }
 
