@@ -11,8 +11,6 @@ import (
 const (
 	BOLDER = 79
 	NOTHING = 46
-	
-	ROCK = 35
 )
 
 func readFile(fname string) [][]byte {
