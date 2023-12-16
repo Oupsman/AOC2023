@@ -146,9 +146,7 @@ func main() {
 	var initialCoords Coords
 	initialCoords.x = 0
 	initialCoords.y = 0
-
-	initialDir := E
-	simulateBeam(puzzle, initialCoords, initialDir, &energizedTiles, &cache)
+	simulateBeam(puzzle, initialCoords, E, &energizedTiles, &cache)
 
 	sumPart1 = sumEnergy(&energizedTiles)
 
@@ -160,10 +158,9 @@ func main() {
 		// check for every entrypoint
 		initialCoords.x = 0
 		initialCoords.y = row
-		initialDir = E
-		cache = make(map[string]int)
+		cache = make(map[string]int) // reset cache
 		resetEnergy(&energizedTiles)
-		simulateBeam(puzzle, initialCoords, initialDir, &energizedTiles, &cache)
+		simulateBeam(puzzle, initialCoords, E, &energizedTiles, &cache)
 		
 		if sumEnergy(&energizedTiles) > maxEnergy {
 			maxEnergy = sumEnergy(&energizedTiles)
@@ -171,10 +168,10 @@ func main() {
 		
 		initialCoords.x = len(puzzle[0])-1
 		initialCoords.y = row
-		initialDir = W
-		cache = make(map[string]int)
+
+		cache = make(map[string]int) // reset cache
 		resetEnergy(&energizedTiles)
-		simulateBeam(puzzle, initialCoords, initialDir, &energizedTiles, &cache)
+		simulateBeam(puzzle, initialCoords, W, &energizedTiles, &cache)
 		
 		if sumEnergy(&energizedTiles) > maxEnergy {
 			maxEnergy = sumEnergy(&energizedTiles)
@@ -184,10 +181,9 @@ func main() {
 	for col := 0; col < len(puzzle[0]); col++ {
 		initialCoords.x = col
 		initialCoords.y = 0
-		initialDir = S
-		cache = make(map[string]int)
+		cache = make(map[string]int) // reset cache
 		resetEnergy(&energizedTiles)
-		simulateBeam(puzzle, initialCoords, initialDir, &energizedTiles, &cache)
+		simulateBeam(puzzle, initialCoords, S, &energizedTiles, &cache)
 
 		if sumEnergy(&energizedTiles) > maxEnergy {
 			maxEnergy = sumEnergy(&energizedTiles)
@@ -195,10 +191,9 @@ func main() {
 
 		initialCoords.x = col
 		initialCoords.y = len(puzzle[0])-1
-		initialDir = N
-		cache = make(map[string]int)
+		cache = make(map[string]int) // reset cache
 		resetEnergy(&energizedTiles)
-		simulateBeam(puzzle, initialCoords, initialDir, &energizedTiles, &cache)
+		simulateBeam(puzzle, initialCoords, N, &energizedTiles, &cache)
 
 		if sumEnergy(&energizedTiles) > maxEnergy {
 			maxEnergy = sumEnergy(&energizedTiles)
