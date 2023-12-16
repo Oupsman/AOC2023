@@ -153,7 +153,7 @@ func main() {
 	var cache = make(map[string]int)
 	timeStart := time.Now()
 	INPUT := "input_14.txt"
-	//INPUT := "test_14.txt"
+	// INPUT := "test_14.txt"
 	
 	fileContent := readFile(INPUT)
 	
@@ -177,6 +177,7 @@ func main() {
 		}
 		
 		if cycle == breakP {
+			fmt.Println("Cycle: ", cycle)
 			break
 		}
 		

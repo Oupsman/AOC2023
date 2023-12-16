@@ -6,6 +6,7 @@ import (
 	"strings"
 	"strconv"
 	"fmt"
+	"time"
 )
 
 var cache = make(map[string]int)
@@ -81,6 +82,8 @@ func recursiveArrangements(springs string, groups []int) int {
 }
 
 func main() {
+
+	timeStart := time.Now()
 	INPUT := "input_12.txt"
 	// INPUT := "test_12.txt"
 
@@ -120,4 +123,6 @@ func main() {
 	}
 
 	fmt.Println("Part2:", sum_part2)
+
+	fmt.Printf("Time: %.2fms\n", float64(time.Since(timeStart).Microseconds())/1000)
 }

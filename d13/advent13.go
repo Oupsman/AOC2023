@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"os"
 	"fmt"
+	"time"
 )
 
 
@@ -63,6 +64,9 @@ func findVertSymetry(puzzle []string, smudge bool) int {
 }
 
 func main() {
+
+	timeStart := time.Now()
+
 	INPUT := "input_13.txt"
 	// INPUT := "test_13.txt"
 	var puzzles [][]string
@@ -94,5 +98,5 @@ func main() {
 	}
 	fmt.Println("Part1:", sum_part1)
 	fmt.Println("Part2:", sum_part2)
-
+	fmt.Printf("Time: %.2fms\n", float64(time.Since(timeStart).Microseconds())/1000)
 }
