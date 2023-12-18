@@ -42,16 +42,16 @@ var right = []int{
 	N: W,
 }
 
+
 type Node struct {
 	x, y     int
-	heatLoss int
-	Dir      Dir
+	distance int
 }
 
 type PriorityQueue []*Node
 
 func (pq PriorityQueue) Len() int           { return len(pq) }
-func (pq PriorityQueue) Less(i, j int) bool { return pq[i].heatLoss < pq[j].heatLoss }
+func (pq PriorityQueue) Less(i, j int) bool { return pq[i].distance < pq[j].distance }
 func (pq PriorityQueue) Swap(i, j int)      { pq[i], pq[j] = pq[j], pq[i] }
 
 func (pq *PriorityQueue) Push(x interface{}) {
@@ -67,64 +67,48 @@ func (pq *PriorityQueue) Pop() interface{} {
 	return node
 }
 
-func dijkstra(puzzle [][]int, start, end [2]int) [][2]int {
+func dijkstra(grid [][]int, start, end [2]int) [][2]int {
+	rows, cols := len(grid), len(grid[0])
+	directions := [][2]int{{1, 0}, {-1, 0}, {0, 1}, {0, -1}} // Déplacements possibles : bas, haut, droite, gauche
 
-	rows, cols := len(puzzle), len(puzzle[0])
-
-	// Initialisation des heatLosses à l'infini sauf pour le point de départ
-	heatLosses := make([][]int, rows)
+	// Initialisation des distances à l'infini sauf pour le point de départ
+	distances := make([][]int, rows)
 	for i := 0; i < rows; i++ {
-		heatLosses[i] = make([]int, cols)
+		distances[i] = make([]int, cols)
 		for j := 0; j < cols; j++ {
-			heatLosses[i][j] = 1<<31 - 1
+			distances[i][j] = 1<<31 - 1
 		}
 	}
-
-	fmt.Println("Starting dijkstra search")
-	heatLosses[start[0]][start[1]] = 0
+	distances[start[0]][start[1]] = 0
 
 	// Initialisation de la file de priorité avec le point de départ
 	priorityQueue := make(PriorityQueue, 0)
-	heap.Push(&priorityQueue, &Node{start[0], start[1], puzzle[0][0], directions[E]})
-	currentDir := E
+	heap.Push(&priorityQueue, &Node{start[0], start[1], 0})
+
 	for len(priorityQueue) > 0 {
-		fmt.Println("For loop")
 		node := heap.Pop(&priorityQueue).(*Node)
 
 		if [2]int{node.x, node.y} == end {
 			break // On a atteint le point d'arrêt, sortie de la boucle
 		}
-		if node.heatLoss < heatLosses[node.y][node.x] {
+
+		if node.distance > distances[node.x][node.y] {
 			continue // Ignorer les nœuds déjà visités
 		}
-		leftDir := directions[left[currentDir]]
-		rightDir := directions[right[currentDir]]
-		straight := directions[currentDir]
-		availableDirs := []Dir{leftDir, straight, rightDir}
-		minHeatLoss := 1<<31 -1
-		followDir := directions[currentDir]
-		followX := 0
-		followY := 0
-		for _, direction := range availableDirs {
-			dx, dy := direction.x, direction.y
-			x, y := node.x+dx, node.y+dy
-			
-			if 0 <= x && x < rows && 0 <= y && y < cols {
-				newHeatLoss := puzzle[y][x]
-				fmt.Println("Heatloss: ", newHeatLoss)
-				if newHeatLoss < minHeatLoss {
-					fmt.Println("Following to :", x, y)
-					minHeatLoss = newHeatLoss
-					followDir = direction
-					followX = x
-					followY = y
-				}
 
+		for _, direction := range directions {
+			dx, dy := direction[0], direction[1]
+			x, y := node.x+dx, node.y+dy
+
+			if 0 <= x && x < rows && 0 <= y && y < cols {
+				newDistance := node.distance + grid[x][y]
+
+				if newDistance < distances[x][y] {
+					distances[x][y] = newDistance
+					heap.Push(&priorityQueue, &Node{x, y, newDistance})
+				}
 			}
 		}
-		heatLosses[followX][followY] = minHeatLoss
-		fmt.Println("Current Coords: ", followX, followY)
-		heap.Push(&priorityQueue, &Node{followX, followY, minHeatLoss, followDir})
 	}
 
 	// Reconstruction du chemin
@@ -132,12 +116,11 @@ func dijkstra(puzzle [][]int, start, end [2]int) [][2]int {
 	x, y := end[0], end[1]
 
 	for [2]int{x, y} != start {
-
 		path = append(path, [2]int{x, y})
 		for _, direction := range directions {
-			dx, dy := direction.x, direction.y
+			dx, dy := direction[0], direction[1]
 			nx, ny := x+dx, y+dy
-			if 0 <= nx && nx < rows && 0 <= ny && ny < cols && heatLosses[nx][ny]+puzzle[x][y] == heatLosses[x][y] {
+			if 0 <= nx && nx < rows && 0 <= ny && ny < cols && distances[nx][ny]+grid[x][y] == distances[x][y] {
 				x, y = nx, ny
 				break
 			}
@@ -153,6 +136,8 @@ func dijkstra(puzzle [][]int, start, end [2]int) [][2]int {
 	}
 	return reversePath
 }
+
+
 func readFileInt(fname string) [][]int {
 	var lines [][]int
 	file, err := os.Open(fname)
@@ -192,6 +177,7 @@ func main() {
 	end := [2]int{len(puzzle[0]), len(puzzle)}
 
 	points := dijkstra(puzzle, start, end)
+
 	fmt.Println(points)
 	sumPart1 = heatLoss(puzzle, points)
 
