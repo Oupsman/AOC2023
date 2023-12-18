@@ -95,7 +95,6 @@ func (pq *PriorityQueue) Pop() interface{} {
 func indexOf(arr []Dir, candidate Dir) int {
 	for index, c := range arr {
 		if c == candidate {
-			fmt.Println("IndexOf", c, candidate, index)
 			return index
 		}
 	}
@@ -131,7 +130,7 @@ func AStarSearch(grid [][]int, start, end GridCell) ([]GridCell, error) {
 		visited[current.Position] = true
 
 		// availableDirections := []Dir{directions[left[currentDir]], directions[right[currentDir]], directions[currentDir]}
-
+		fmt.Println("Position:", current.Position)
 		// Explore neighbors
 		for i, dir := range directions {
 			nextPos := GridCell{X: current.Position.X + dir.x, Y: current.Position.Y + dir.y}
@@ -140,15 +139,17 @@ func AStarSearch(grid [][]int, start, end GridCell) ([]GridCell, error) {
 			if isValidMove(current, nextPos, grid, i) && !visited[nextPos] {
 				nextCost := current.Cost + grid[nextPos.X][nextPos.Y]
 				nextHeuristic := heuristic(nextPos, end)
+				fmt.Println("\tHeuristic: ", nextHeuristic, nextPos)
+				fmt.Println("\tnextCost:", nextCost, nextPos)
 				nextNode := &Node{
 					Position:  nextPos,
 					Cost:      nextCost,
 					Heuristic: nextHeuristic,
 					Parent:    current,
 					Moves:     nextMovesCount(current, i),
+	//				Moves: current.Moves+1,
 					Direction: indexOf(directions, dir),
 					}
-					fmt.Println("Nextpos", nextPos)
 					heap.Push(&pq, nextNode)
 			}
 		}
@@ -173,7 +174,7 @@ func isValidMove(current *Node, nextPos GridCell, grid [][]int, nextDirectionInd
 	if nextPos.X < 0 || nextPos.X >= len(grid) || nextPos.Y < 0 || nextPos.Y >= len(grid[0]) {
 		return false
 	}
-
+/*
 	// Check if the crucible is reversing direction (not allowed)
 	if isReversingDirection(current.Direction, nextDirectionIndex) {
 		return false
@@ -183,7 +184,7 @@ func isValidMove(current *Node, nextPos GridCell, grid [][]int, nextDirectionInd
 	if current.Moves >= 3 && current.Direction == nextDirectionIndex {
 		return false
 	}
-
+*/
 	return true
 }
 
