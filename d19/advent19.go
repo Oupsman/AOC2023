@@ -98,30 +98,46 @@ func executeWorkflows(ratings Rating, workflows Workflow) int64 {
 }
 
 func doCombinations(workflows Workflow, workflow string, ranges []Range) int64 {
-
+	fmt.Println(workflow,"Ranges: ", ranges)
 	result := int64(0)
 	instructions := workflows[workflow]
 	for _, instruction := range instructions {
 		rangeCopy := make([]Range, 4)
+		copy(rangeCopy, ranges)
 		indexVar := map[string]int{"x": 0, "m": 1, "a": 2, "s": 3}[instruction.part]
 		if instruction.sign == "<" {
 			rangeCopy[indexVar].end = instruction.quantity - 1
 			ranges[indexVar].start = instruction.quantity
-			result += doCombinations(workflows, instruction.targetWorkflow, rangeCopy)
+			if instruction.follow {
+				result += doCombinations(workflows, instruction.targetWorkflow, rangeCopy)
+			} else if instruction.accept {
+				return doRangeProduct(rangeCopy)
+			} else if instruction.reject {
+				return 0
+			}
 		} else if instruction.sign == ">" {
 			rangeCopy[indexVar].start = instruction.quantity + 1
 			ranges[indexVar].end = instruction.quantity
-			result += doCombinations(workflows, instruction.targetWorkflow, rangeCopy)
-		} else if instruction.accept {
+			if instruction.follow {
+				result += doCombinations(workflows, instruction.targetWorkflow, rangeCopy)
+			} else if instruction.accept {
+				return doRangeProduct(rangeCopy)
+			} else if instruction.reject {
+				return 0
+			}
+
+		} /*else if instruction.accept {
 			result += doRangeProduct(ranges)
-		}
+		} else if instruction.reject {
+			return 0
+		}*/
 	}
 	return result
 }
 
 func doRangeProduct(ranges []Range) int64 {
 	result := int64(1)
-	fmt.Println(ranges)
+	fmt.Println("Range product : Ranges", ranges)
 	for _, r := range ranges {
 		result *= r.end - r.start + 1
 	}
