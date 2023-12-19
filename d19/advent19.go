@@ -60,7 +60,6 @@ func executeWorkflow(ratings Rating, workflows Workflow, workflow string) bool {
 			}
 		} else if instruction.follow && instruction.part == "" {
 			return executeWorkflow(ratings, workflows, instruction.targetWorkflow)
-			break
 		} else if instruction.quantity == 0 && instruction.accept {
 			return true
 		} else if instruction.quantity == 0 && instruction.reject {
@@ -154,7 +153,7 @@ func solve(input []string, part2 bool) int64 {
 
 func main() {
 	timeStart := time.Now()
-	// INPUT := "test.txt"
+	//INPUT := "test.txt"
 	INPUT := "input.txt"
 
 	fileContent := readFile(INPUT)
