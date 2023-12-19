@@ -128,7 +128,7 @@ func doCombinations(workflows Workflow, workflow string, ranges []Range) int64 {
 		} else if instruction.accept {
 			result += doRangeProduct(ranges)
 		} else if instruction.reject {
-			return 0
+			result += 0
 		} else if instruction.follow {
 			result += doCombinations(workflows, instruction.targetWorkflow, ranges)
 		}
@@ -141,7 +141,9 @@ func doRangeProduct(ranges []Range) int64 {
 	fmt.Println("Range product : Ranges", ranges)
 	for _, r := range ranges {
 		result *= r.end - r.start + 1
+		fmt.Println("Result:", result)
 	}
+	fmt.Println("Result:", result)
 	return result
 }
 func solve(input []string, part2 bool) int64 {
@@ -214,8 +216,8 @@ func solve(input []string, part2 bool) int64 {
 
 func main() {
 	timeStart := time.Now()
-	INPUT := "test.txt"
-	//INPUT := "input.txt"
+	// INPUT := "test.txt"
+	INPUT := "input.txt"
 	// INPUT := "unit_test.txt"
 	fileContent := readFile(INPUT)
 
