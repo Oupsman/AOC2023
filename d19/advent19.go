@@ -10,12 +10,16 @@ import (
 	"time"
 )
 
+type Range struct {
+	start, end int64
+}
+
 type Rating map[string]int64
 
 type Instruction struct {
 	part           string
 	quantity       int64
-	superior       bool
+	sign           string
 	targetWorkflow string
 	follow         bool
 	accept         bool
@@ -40,30 +44,37 @@ func readFile(fname string) []string {
 
 func executeWorkflow(ratings Rating, workflows Workflow, workflow string) bool {
 	// sum := int64(0)
-	fmt.Println("Executing workflow:", workflow)
+	// fmt.Println("Executing workflow:", workflow)
 	instructions := workflows[workflow]
 	for _, instruction := range instructions {
-		valid := false
 		_, ok := ratings[instruction.part]
 		if ok {
+			value := ratings[instruction.part]
 			// If there is a instruction for this variable
-			if instruction.quantity < ratings[instruction.part] && instruction.superior {
-				valid = true
-			} else if instruction.quantity > ratings[instruction.part] && !instruction.superior {
-				valid = true
+			if instruction.sign == ">" && value > instruction.quantity {
+				if instruction.follow {
+					return executeWorkflow(ratings, workflows, instruction.targetWorkflow)
+				} else if instruction.accept {
+					return true
+				} else if instruction.reject {
+					return false
+				}
+			} else if instruction.sign == "<" && value < instruction.quantity {
+				if instruction.follow {
+					return executeWorkflow(ratings, workflows, instruction.targetWorkflow)
+				} else if instruction.accept {
+					return true
+				} else if instruction.reject {
+					return false
+				}
 			}
-			if instruction.quantity > 0 && valid && instruction.follow {
-				return executeWorkflow(ratings, workflows, instruction.targetWorkflow)
-			}
-			if valid && instruction.accept {
-				return true
-			}
+
 		} else if instruction.follow && instruction.part == "" {
 			return executeWorkflow(ratings, workflows, instruction.targetWorkflow)
 		} else if instruction.quantity == 0 && instruction.accept {
 			return true
 		} else if instruction.quantity == 0 && instruction.reject {
-			fmt.Println("REJECT !")
+	//		fmt.Println("REJECT !")
 			return false
 		}
 
@@ -76,16 +87,46 @@ func executeWorkflows(ratings Rating, workflows Workflow) int64 {
 
 	// First execute the in workflow
 	val := executeWorkflow(ratings, workflows, "in")
-	fmt.Println("Val:", val)
+	// fmt.Println("Val:", val)
 	sum := int64(0)
 	if val {
 		for _, rating := range ratings {
-			sum += rating		
+			sum += rating
 		}
 	}
 	return sum
 }
 
+func doCombinations(workflows Workflow, workflow string, ranges []Range) int64 {
+
+	result := int64(0)
+	instructions := workflows[workflow]
+	for _, instruction := range instructions {
+		rangeCopy := make([]Range, 4)
+		indexVar := map[string]int{"x": 0, "m": 1, "a": 2, "s": 3}[instruction.part]
+		if instruction.sign == "<" {
+			rangeCopy[indexVar].end = instruction.quantity - 1
+			ranges[indexVar].start = instruction.quantity
+			result += doCombinations(workflows, instruction.targetWorkflow, rangeCopy)
+		} else if instruction.sign == ">" {
+			rangeCopy[indexVar].start = instruction.quantity + 1
+			ranges[indexVar].end = instruction.quantity
+			result += doCombinations(workflows, instruction.targetWorkflow, rangeCopy)
+		} else if instruction.accept {
+			result += doRangeProduct(ranges)
+		}
+	}
+	return result
+}
+
+func doRangeProduct(ranges []Range) int64 {
+	result := int64(1)
+	fmt.Println(ranges)
+	for _, r := range ranges {
+		result *= r.end - r.start + 1
+	}
+	return result
+}
 func solve(input []string, part2 bool) int64 {
 	decomposeLine := regexp.MustCompile(`^([a-z]+){(.*)}$`)
 	decomposeInstructions := regexp.MustCompile(`([ARa-z]+)([<>]?)([0-9]+?):?([ARa-z]+?)$`)
@@ -106,7 +147,7 @@ func solve(input []string, part2 bool) int64 {
 				matchI := decomposeInstructions.FindStringSubmatch(instruction)
 				if len(matchI) > 0 {
 					targetInstruction.part = matchI[1]
-					targetInstruction.superior = matchI[2] == ">"
+					targetInstruction.sign = matchI[2]
 					targetInstruction.accept = matchI[4] == "A"
 					targetInstruction.reject = matchI[4] == "R"
 					if matchI[4] != "A" && matchI[4] != "R" {
@@ -126,9 +167,10 @@ func solve(input []string, part2 bool) int64 {
 
 				instructions = append(instructions, targetInstruction)
 				workflows[match[1]] = instructions
+
 			}
 			continue
-		} else {
+		} else if !part2 {
 			regexpParts := regexp.MustCompile(`{(.+)}`)
 			rawParts := regexpParts.FindStringSubmatch(line)
 			// fmt.Println(line, rawParts)
@@ -146,24 +188,26 @@ func solve(input []string, part2 bool) int64 {
 
 			sum += val
 		}
-
+	}
+	if part2 {
+		sum = doCombinations(workflows, "in", []Range{{1, 4000}, {1, 4000}, {1, 4000}, {1, 4000}})
 	}
 	return sum
 }
 
 func main() {
 	timeStart := time.Now()
-	//INPUT := "test.txt"
-	INPUT := "input.txt"
-
+	INPUT := "test.txt"
+	//INPUT := "input.txt"
+	// INPUT := "unit_test.txt"
 	fileContent := readFile(INPUT)
 
 	sumPart1 := solve(fileContent, false)
 
-	// sumPart2 := solve(fileContent, true)
+	sumPart2 := solve(fileContent, true)
 
 	fmt.Println("Part1:", sumPart1)
-	// fmt.Println("Part2:", sumPart2)
+	fmt.Println("Part2:", sumPart2)
 
 	fmt.Printf("Time: %.2fms\n", float64(time.Since(timeStart).Microseconds())/1000)
 }
