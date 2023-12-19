@@ -74,7 +74,7 @@ func executeWorkflow(ratings Rating, workflows Workflow, workflow string) bool {
 		} else if instruction.quantity == 0 && instruction.accept {
 			return true
 		} else if instruction.quantity == 0 && instruction.reject {
-	//		fmt.Println("REJECT !")
+			//		fmt.Println("REJECT !")
 			return false
 		}
 
@@ -98,7 +98,7 @@ func executeWorkflows(ratings Rating, workflows Workflow) int64 {
 }
 
 func doCombinations(workflows Workflow, workflow string, ranges []Range) int64 {
-	fmt.Println(workflow,"Ranges: ", ranges)
+	fmt.Println(workflow, "Ranges: ", ranges)
 	result := int64(0)
 	instructions := workflows[workflow]
 	for _, instruction := range instructions {
@@ -111,9 +111,9 @@ func doCombinations(workflows Workflow, workflow string, ranges []Range) int64 {
 			if instruction.follow {
 				result += doCombinations(workflows, instruction.targetWorkflow, rangeCopy)
 			} else if instruction.accept {
-				return doRangeProduct(rangeCopy)
+				result += doRangeProduct(rangeCopy)
 			} else if instruction.reject {
-				return 0
+				result += 0
 			}
 		} else if instruction.sign == ">" {
 			rangeCopy[indexVar].start = instruction.quantity + 1
@@ -121,16 +121,17 @@ func doCombinations(workflows Workflow, workflow string, ranges []Range) int64 {
 			if instruction.follow {
 				result += doCombinations(workflows, instruction.targetWorkflow, rangeCopy)
 			} else if instruction.accept {
-				return doRangeProduct(rangeCopy)
+				result += doRangeProduct(rangeCopy)
 			} else if instruction.reject {
-				return 0
+				result += 0
 			}
-
-		} /*else if instruction.accept {
+		} else if instruction.accept {
 			result += doRangeProduct(ranges)
 		} else if instruction.reject {
 			return 0
-		}*/
+		} else if instruction.follow {
+			result += doCombinations(workflows, instruction.targetWorkflow, ranges)
+		}
 	}
 	return result
 }
