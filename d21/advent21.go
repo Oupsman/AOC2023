@@ -3,10 +3,9 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"math"
+
 	"os"
 	"time"
-	"sync"
 )
 
 const (
@@ -45,29 +44,17 @@ func contains(val Position, arr []Position) bool {
 	return false
 }
 
-func solve(puzzle [][]int, startingPoint Position, maxMoves int, part2 bool) int {
+func solve(puzzle [][]int, startingPoint Position, maxMoves int, part2 bool, a *[3]int64) int64 {
 	var visited = make(map[int][]Position)
 
 	// move := 0
 	visited[0] = append(visited[0], startingPoint)
-	for move:=0; move < maxMoves; move++ {
+	found := 0
+	prevLen := int64(0)
+	for move := 0; move < maxMoves; move++ {
 		for _, currentPos := range visited[move] {
 			for _, dir := range directions {
 				targetPos := Position{currentPos.x + dir.x, currentPos.y + dir.y}
-				/* if part2 {
-				if targetPos.x < 0 {
-				targetPos.x = width-1
-				}
-				if targetPos.y < 0 {
-				targetPos.y = height-1
-				}
-				if targetPos.x >= width {
-				targetPos.x = 0
-				}
-				if targetPos.y >= height {
-				targetPos.y = 0
-				}
-				} */
 				if isMoveValid(puzzle, targetPos) {
 					if !contains(targetPos, visited[move+1]) {
 						visited[move+1] = append(visited[move+1], targetPos)
@@ -75,16 +62,28 @@ func solve(puzzle [][]int, startingPoint Position, maxMoves int, part2 bool) int
 				}
 			}
 		}
+		if part2 {
+			if (move % len(puzzle)) == (maxMoves % len(puzzle)) {
+				fmt.Println("Move", move, len(visited[move]), "prevLen", int64(len(visited[move])) - prevLen)
+				prevLen = int64(len(visited[move]))
+				(*a)[found] = prevLen
+				found++
+			}
+			if found == 3 {
+				break
+			}
+		}
 	}
 
-	sum := len(visited[len(visited)-1])
+	sum := int64(len(visited[len(visited)-1]))
 	return sum
 }
 
 func isMoveValid(puzzle [][]int, targetPos Position) bool {
-	realX := targetPos.x % 131
-	realY := targetPos.y % 131
-	if realX < 0 || realX > len(puzzle[0])-1 || realX <0 || realY < 0 || realY > len(puzzle)-1 || puzzle[realY][realX] == obstacle {
+	realX := ((targetPos.x % len(puzzle))+ len(puzzle)) % len(puzzle)
+	realY := ((targetPos.y % len(puzzle))+ len(puzzle)) % len(puzzle)
+
+	if realX < 0 || realX > len(puzzle[0])-1 || realX < 0 || realY < 0 || realY > len(puzzle)-1 || puzzle[realY][realX] == obstacle {
 		return false
 	}
 	return true
@@ -108,12 +107,12 @@ func readFileInt(fname string) ([][]int, Position) {
 			case ".":
 				num = free
 				break
-				case "#":
-					num = obstacle
-					break
-					case "S":
-						num = start
-						break
+			case "#":
+				num = obstacle
+				break
+			case "S":
+				num = start
+				break
 			}
 			if num == start {
 				startPoint = Position{x, y}
@@ -126,33 +125,28 @@ func readFileInt(fname string) ([][]int, Position) {
 	return puzzle, startPoint
 }
 
-func f(x int64) int64 {
-	fmt.Println("Target steps:", 65+x*131)
-	return 3943 + 13136*x + 3405*int64(math.Pow(float64(x), 2.0))
+func f(x int64, a [3]int64) int64 {
+	b0 := a[0]
+	b1 := a[1]-a[0]
+	b2 := a[2]-a[1]
+	return b0 + b1*x + (x*(x-1)/2)*(b2-b1)
+
 }
 
 func main() {
 
 	timeStart := time.Now()
 	INPUT := "input.txt"
-	// NPUT := "test.txt"
-	sumPart1 := 0
+	// INPUT := "test.txt"
+	sumPart1 := int64(0)
 	sumPart2 := int64(0)
 
 	puzzle, startingPoint := readFileInt(INPUT)
 
-	sumPart1 = solve(puzzle, startingPoint, 64, false)
-	// 3858
-	wg := sync.WaitGroup{}
-	for i := 0; i<10; i++ {
-		wg.Add(1)
-		go func (i int) {
-			value := solve(puzzle, startingPoint, 65+i*131, true)
-			fmt.Println("i", i, i*131+65, value)
-		}(i)
-	}
-	wg.Wait()
-	sumPart2 = f(202300)
+	sumPart1 = solve(puzzle, startingPoint, 64, false, nil)
+	var a [3]int64
+	solve(puzzle, startingPoint, 26501365, true, &a)
+	sumPart2 = f(int64(26501365/len(puzzle)), a)
 	fmt.Println("Part1:", sumPart1)
 	fmt.Println("Part2:", sumPart2)
 	fmt.Printf("Time: %.2fms\n", float64(time.Since(timeStart).Microseconds())/1000)
